@@ -246,9 +246,8 @@
         
         .field-content {
             color: #333333;
-            line-height: 1.7;
-            font-size: 12px;
-            white-space: pre-wrap;
+            line-height: 1.8;
+            font-size: 14px;
             word-wrap: break-word;
         }
         .field-content h1 {
@@ -292,6 +291,7 @@
             border-radius: 6px;
             margin: 15px 0;
             overflow-x: auto;
+            white-space: pre-wrap; /* Apply whitespace preservation only to pre blocks */
         }
         .field-content pre code {
             background: none;
@@ -485,7 +485,8 @@
                         data = new Function(`return ${processedInput}`)();
                     } catch (finalError) {
                         throw e;
-                    }
+    
+                }
                 }
                 
                 if (!Array.isArray(data)) {
@@ -531,7 +532,7 @@
             try {
                 const formattedHtml = formatContent(input);
                 let html = `<div class="success-message">MARKDOWN PROCESSING COMPLETE</div>`;
-                html += `<div class="record-section"><div class="field-content" style="font-size: 14px; line-height: 1.8;">${formattedHtml}</div></div>`;
+                html += `<div class="record-section"><div class="field-content">${formattedHtml}</div></div>`;
                 output.innerHTML = html;
                 output.scrollTop = 0;
             } catch (e) {
