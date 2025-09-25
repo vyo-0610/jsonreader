@@ -63,7 +63,7 @@
             overflow: hidden;
             border: 1px solid #e0e0e0;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            height: 70vh; /* Sets a fixed height for panels */
+            height: 70vh;
         }
         
         .panel-header {
@@ -291,7 +291,7 @@
             border-radius: 6px;
             margin: 15px 0;
             overflow-x: auto;
-            white-space: pre-wrap; /* Apply whitespace preservation only to pre blocks */
+            white-space: pre-wrap;
         }
         .field-content pre code {
             background: none;
@@ -371,6 +371,14 @@
             background: #aaaaaa;
         }
 
+        #last-update {
+            position: fixed;
+            bottom: 10px;
+            right: 15px;
+            font-size: 11px;
+            color: #c0c0c0;
+        }
+
         @media (max-width: 968px) {
             .main-grid { 
                 grid-template-columns: 1fr;
@@ -381,6 +389,9 @@
             }
             h1 { font-size: 22px; }
             button { padding: 9px 24px; font-size: 13px; }
+            #last-update {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -429,6 +440,8 @@
             <button onclick="clearAll()">Clear</button>
         </div>
     </div>
+
+    <div id="last-update">Last Update: 25 September 2025</div>
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
@@ -485,28 +498,34 @@
                         data = new Function(`return ${processedInput}`)();
                     } catch (finalError) {
                         throw e;
-    
-                }
+                    }
                 }
                 
                 if (!Array.isArray(data)) {
                     data = [data];
                 }
                 
+                // Auto-fix for arrays of strings/numbers into an array of objects
+                if (data.length > 0 && (typeof data[0] !== 'object' || data[0] === null)) {
+                    data = data.map(value => ({ "Content": value }));
+                }
+
                 let html = `<div class="success-message">JSON PROCESSING COMPLETE • ${data.length} ENTRIES FORMATTED</div>`;
                 
                 data.forEach((item, index) => {
                     html += `<div class="record-section">`;
                     html += `<div class="record-header">RECORD ${index + 1}</div>`;
                     
-                    Object.keys(item).forEach(key => {
-                        if (item[key] !== null && item[key] !== undefined && String(item[key]).trim() !== '') {
-                            html += `<div class="field-group">`;
-                            html += `<div class="field-label">${formatFieldName(key)}</div>`;
-                            html += `<div class="field-content">${formatContent(item[key])}</div>`;
-                            html += `</div>`;
-                        }
-                    });
+                    if (item !== null && typeof item === 'object') {
+                        Object.keys(item).forEach(key => {
+                            if (item[key] !== null && item[key] !== undefined && String(item[key]).trim() !== '') {
+                                html += `<div class="field-group">`;
+                                html += `<div class="field-label">${formatFieldName(key)}</div>`;
+                                html += `<div class="field-content">${formatContent(item[key])}</div>`;
+                                html += `</div>`;
+                            }
+                        });
+                    }
                     
                     html += `</div>`;
                 });
@@ -516,7 +535,7 @@
                 
             } catch (e) {
                 console.error('Parsing error:', e);
-                output.innerHTML = `<div class="error"><strong>Processing Failed:</strong><br>${e.message}</div>`;
+                output.innerHTML = `<div class="error"><strong>PROCESSING FAILED:</strong><br>${e.message}</div>`;
             }
         }
 
@@ -537,7 +556,7 @@
                 output.scrollTop = 0;
             } catch (e) {
                 console.error('Markdown processing error:', e);
-                output.innerHTML = `<div class="error"><strong>Processing Failed:</strong><br>${e.message}</div>`;
+                output.innerHTML = `<div class="error"><strong>PROCESSING FAILED:</strong><br>${e.message}</div>`;
             }
         }
         
