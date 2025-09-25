@@ -387,13 +387,17 @@
             <div class="panel">
                 <div class="panel-header">
                     <div class="tab-header">
-                        <div class="tab-button active" data-tab="source">Input</div>
+                        <div class="tab-button active" data-tab="json-input">JSON Input</div>
+                        <div class="tab-button" data-tab="markdown-input">Markdown Input</div>
                         <div class="tab-button" data-tab="notepad">Notepad</div>
                     </div>
                 </div>
                 <div class="panel-body">
-                    <div class="tab-pane active" id="source-pane">
-                         <textarea id="inputText" placeholder="Paste your JSON here..." spellcheck="false"></textarea>
+                    <div class="tab-pane active" id="json-input-pane">
+                         <textarea id="jsonInputText" placeholder="Paste your JSON here..." spellcheck="false"></textarea>
+                    </div>
+                    <div class="tab-pane" id="markdown-input-pane">
+                        <textarea id="markdownInputText" placeholder="Paste your Markdown text here..." spellcheck="false"></textarea>
                     </div>
                     <div class="tab-pane" id="notepad-pane">
                         <textarea id="notepadText" placeholder="Your notes here..." spellcheck="false"></textarea>
@@ -414,7 +418,7 @@
         </div>
         
         <div class="button-container">
-            <button class="primary" onclick="formatJSON()">Process</button>
+            <button class="primary" onclick="processInput()">Process</button>
             <button onclick="clearAll()">Clear</button>
         </div>
     </div>
@@ -425,11 +429,10 @@
             const tabButtons = document.querySelectorAll('.tab-button');
             tabButtons.forEach(button => {
                 button.addEventListener('click', () => {
-                    const tabHeader = button.closest('.tab-header');
-                    const panel = button.closest('.panel');
                     const tabName = button.getAttribute('data-tab');
-
-                    tabHeader.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                    const panel = button.closest('.panel');
+                    
+                    panel.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
                     panel.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
 
                     button.classList.add('active');
@@ -445,8 +448,19 @@
             mangle: false
         });
 
-        function formatJSON() {
-            const input = document.getElementById('inputText').value;
+        function processInput() {
+            const activeTab = document.querySelector('.tab-button.active').dataset.tab;
+
+            if (activeTab === 'json-input') {
+                processJsonInput();
+            } else if (activeTab === 'markdown-input') {
+                processMarkdownInput();
+            }
+            // If activeTab is 'notepad', no action is taken.
+        }
+
+        function processJsonInput() {
+            const input = document.getElementById('jsonInputText').value;
             const output = document.getElementById('outputContent');
             
             try {
@@ -497,6 +511,27 @@
                 output.innerHTML = `<div class="error"><strong>Processing Failed:</strong><br>${e.message}</div>`;
             }
         }
+
+        function processMarkdownInput() {
+            const input = document.getElementById('markdownInputText').value;
+            const output = document.getElementById('outputContent');
+            
+            if (input.trim() === '') {
+                output.innerHTML = '<div class="empty-state">Nothing to process. Please enter some text.</div>';
+                return;
+            }
+
+            try {
+                const formattedHtml = formatContent(input);
+                let html = `<div class="success-message">MARKDOWN PROCESSING COMPLETE</div>`;
+                html += `<div class="record-section"><div class="field-content" style="font-size: 14px; line-height: 1.8;">${formattedHtml}</div></div>`;
+                output.innerHTML = html;
+                output.scrollTop = 0;
+            } catch (e) {
+                console.error('Markdown processing error:', e);
+                output.innerHTML = `<div class="error"><strong>Processing Failed:</strong><br>${e.message}</div>`;
+            }
+        }
         
         function formatFieldName(name) {
             return name.split('_').map(word => 
@@ -511,7 +546,8 @@
         }
 
         function clearAll() {
-            document.getElementById('inputText').value = '';
+            document.getElementById('jsonInputText').value = '';
+            document.getElementById('markdownInputText').value = '';
             document.getElementById('outputContent').innerHTML = '<div class="empty-state">Formatted output will appear here</div>';
         }
     </script>
